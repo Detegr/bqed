@@ -8,10 +8,13 @@ enter ← @+13
 Ansi ← ∾ansiesc⊸∾⌜
 
 # Move cursor down for one line
-CursorDown ← •OutRaw∘(ansiesc∾"[1E")
+CursorDown ← {𝕊: cx↩1 ⋄ cy↩cy+1}
 
-# No operation
-Nop ← {𝕤}
+# Move cursor to a specific position
+CursorTo ← •OutRaw∘(ansiesc∾"["∾(•Fmt 1⊸⊑)∾";"∾(•Fmt ⊑)∾"H"∘⊢)
+
+# Put character to screen, update cursor
+PutChar ← {cx↩cx+1 ⋄ •OutRaw 𝕩}
 
 # Restore terminal state and exit
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
@@ -20,7 +23,7 @@ Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 keys ← 'q'‿enter
 
 # List of functions corresponding indices of `keys`
-kfns ← Quit‿CursorDown‿•OutRaw
+kfns ← Quit‿CursorDown‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
@@ -30,6 +33,17 @@ Kfn ← ⊑keys⊸⊐
 w←•BQN 1⊑•SH "tput"‿"cols"
 h←•BQN 1⊑•SH "tput"‿"lines"
 
+⟨cx, cy⟩ ← 1‿1
+
+StatusStr ← {𝕊:
+  style ← ansiesc∾"[100;37m"
+  s ← "<" ∾ (•Fmt cx) ∾ "," ∾ (•Fmt cy) ∾ ">"
+  pad ← (w-cx+≠s)/" "
+  style∾s∾pad∾ansiesc∾"[0m"
+}
+
+DrawStatus ← {𝕊: CursorTo 1‿h ⋄ •OutRaw StatusStr @ ⋄ CursorTo cx‿cy}
+
 # Put terminal to raw mode, disable echo
 •SH "stty"‿"raw"‿"-echo"
 
@@ -37,6 +51,8 @@ h←•BQN 1⊑•SH "tput"‿"lines"
 •OutRaw Ansi "[2J"‿"[H"
 
 While 1‿{𝕤
+  DrawStatus @
+
   # Get a character and run a function for the input
   Kfn◶kfns •GetChar @
 }
