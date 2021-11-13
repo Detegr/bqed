@@ -1,0 +1,4 @@
+[submodule "CBQN"]
+	path = CBQN
+	url = git@github.com:Detegr/CBQN.git
+	branch = bqed
