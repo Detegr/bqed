@@ -48,7 +48,7 @@ Kfn ← ⊑keys⊸⊐
 StatusStr ← {𝕊:
   style ← ansiesc∾"[100;37m"
   s ← "<" ∾ (•Fmt cx) ∾ "," ∾ (•Fmt cy) ∾ ">"
-  pad ← (w-cx+≠s)/" "
+  pad ← (w-≠s)/" "
   style∾s∾pad∾ansiesc∾"[0m"
 }
 
