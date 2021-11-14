@@ -1,5 +1,16 @@
 While ← {𝕩{𝔽⍟𝔾∘𝔽_𝕣_𝔾∘𝔽⍟𝔾𝕩}𝕨@}´
 
+# Fetch terminal width and height using `tput`
+# Evaluate with •BQN to convert strings to integers
+w←•BQN 1⊑•SH "tput"‿"cols"
+h←•BQN 1⊑•SH "tput"‿"lines"
+
+# Open file contents
+f ← ⟨""⟩
+
+# Reshape file contents into a screen size matrix
+Scrn ← ∘‿w⊸⥊·∾w⊸↑¨
+
 # ANSI escape code
 ansiesc ← @+27
 enter ← @+13
@@ -7,14 +18,17 @@ enter ← @+13
 # Laminate array of strings with ANSI escape and concatenate them together
 Ansi ← ∾ansiesc⊸∾⌜
 
-# Move cursor down for one line
-CursorDown ← {𝕊: cx↩1 ⋄ cy↩cy+1}
+# Create a new line: update cursor and add line to `f`
+NewLine ← {𝕊: cx↩1 ⋄ cy↩cy+1 ⋄ f↩f∾<""}
 
 # Move cursor to a specific position
+# TODO: Limit so that we don't go into statusbar area
 CursorTo ← •OutRaw∘(ansiesc∾"["∾(•Fmt 1⊸⊑)∾";"∾(•Fmt ⊑)∾"H"∘⊢)
 
 # Put character to screen, update cursor
-PutChar ← {cx↩cx+1 ⋄ •OutRaw 𝕩}
+PutChar ← {𝕊𝕩: f↩𝕩{∾⟜𝕨⌾((cy-1)⊸⊑)𝕩}f ⋄ cx↩cx+1}
+
+DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿cy}
 
 # Restore terminal state and exit
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
@@ -23,18 +37,14 @@ Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 keys ← 'q'‿enter
 
 # List of functions corresponding indices of `keys`
-kfns ← Quit‿CursorDown‿PutChar
+kfns ← Quit‿NewLine‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
 
-# Fetch terminal width and height using `tput`
-# Evaluate with •BQN to convert strings to integers
-w←•BQN 1⊑•SH "tput"‿"cols"
-h←•BQN 1⊑•SH "tput"‿"lines"
-
 ⟨cx, cy⟩ ← 1‿1
 
+# Status bar contents
 StatusStr ← {𝕊:
   style ← ansiesc∾"[100;37m"
   s ← "<" ∾ (•Fmt cx) ∾ "," ∾ (•Fmt cy) ∾ ">"
@@ -51,6 +61,7 @@ DrawStatus ← {𝕊: CursorTo 1‿h ⋄ •OutRaw StatusStr @ ⋄ CursorTo cx�
 •OutRaw Ansi "[2J"‿"[H"
 
 While 1‿{𝕤
+  DrawEditor (Scrn f)
   DrawStatus @
 
   # Get a character and run a function for the input
