@@ -34,7 +34,7 @@ DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿c
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 
 # Special keycodes to react to
-keys ← 'q'‿enter
+keys ← (@+17)‿enter
 
 # List of functions corresponding indices of `keys`
 kfns ← Quit‿NewLine‿PutChar
@@ -47,7 +47,7 @@ Kfn ← ⊑keys⊸⊐
 # Status bar contents
 StatusStr ← {𝕊:
   style ← ansiesc∾"[100;37m"
-  s ← "<" ∾ (•Fmt cx) ∾ "," ∾ (•Fmt cy) ∾ ">"
+  s ← "<" ∾ (•Fmt cx) ∾ "," ∾ (•Fmt cy) ∾ ">" ∾ " | <C-q> to exit"
   pad ← (w-≠s)/" "
   style∾s∾pad∾ansiesc∾"[0m"
 }
