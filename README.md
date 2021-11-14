@@ -1,4 +1,4 @@
-# bqned
+# bqed
 
 Experimental text editor written in [BQN](https://mlochbaum.github.io/BQN/)
 
