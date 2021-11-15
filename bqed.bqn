@@ -14,6 +14,7 @@ Scrn ← ∘‿w⊸⥊·∾w⊸↑¨
 # ANSI escape code
 ansiesc ← @+27
 enter ← @+13
+c_q ← @+17
 
 # Laminate array of strings with ANSI escape and concatenate them together
 Ansi ← ∾ansiesc⊸∾⌜
@@ -33,7 +34,7 @@ DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿c
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 
 # Special keycodes to react to
-keys ← (@+17)‿enter
+keys ← c_q‿enter
 
 # List of functions corresponding indices of `keys`
 kfns ← Quit‿NewLine‿PutChar
