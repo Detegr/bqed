@@ -19,10 +19,9 @@ enter ← @+13
 Ansi ← ∾ansiesc⊸∾⌜
 
 # Create a new line: update cursor and add line to `f`
-NewLine ← {𝕊: cx↩1 ⋄ cy↩cy+1 ⋄ f↩f∾<""}
+NewLine ← {𝕊: cx↩1 ⋄ cy↩(h-1)⌊cy+1 ⋄ f↩f∾<""}
 
 # Move cursor to a specific position
-# TODO: Limit so that we don't go into statusbar area
 CursorTo ← •OutRaw∘(ansiesc∾"["∾(•Fmt 1⊸⊑)∾";"∾(•Fmt ⊑)∾"H"∘⊢)
 
 # Put character to screen, update cursor
