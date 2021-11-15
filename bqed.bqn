@@ -16,6 +16,7 @@ ansiesc ← @+27
 enter ← @+13
 c_q ← @+17
 tab ← @+9
+backspace ← @+127
 
 # Current cursor position
 ⟨cx, cy⟩ ← 1‿1
@@ -42,6 +43,28 @@ Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 
 PutTab ← {𝕊: PutChar "        " ⋄ cx↩cx+7 }
 
+PutBackspace ← {𝕊:
+  # Current line index
+  ci ← cy-1
+  # Current line
+  cl ← (cy-1)⊑f
+  {𝕊:
+    # Index where to delete. Complex because if we're on the first column,
+    # we need to use a high value to produce a mask that does not delete anything
+    i ← {1+≠cl}⍟{(cx-1)≤0} cx-2
+    # Boolean mask that has the current character as 0 and everything else as 1
+    # TODO: There most likely exists a better way to do this. This is way too complex.
+    m ← i{¬»⍟𝕨 1∾(1-˜𝕩)⥊0}≠cl
+    # Filter out the corresponding line in `f`
+    f ↩ m⊸/⌾(ci⊸⊑)f
+    # Update cursor
+    cx ↩ (cx-1)⌈1
+  }⍟(0<≠cl) @ # Do above only if the line has content
+
+  # TODO: For the future: should wrap to a previous line if we're at the beginning of the line.
+  #                       should remove an empty line if we're at the beginning of the line.
+}
+
 HandleEsc ← {
   "[": HandleEsc •GetChar @ ;
   # Cursor movement
@@ -55,10 +78,10 @@ HandleEsc ← {
 Esc ← {𝕊: HandleEsc •GetChar @ }
 
 # Special keycodes to react to
-keys ← ansiesc‿c_q‿tab‿enter
+keys ← ansiesc‿c_q‿tab‿backspace‿enter
 
 # List of functions corresponding indices of `keys`
-kfns ← Esc‿Quit‿PutTab‿NewLine‿PutChar
+kfns ← Esc‿Quit‿PutTab‿PutBackspace‿NewLine‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
