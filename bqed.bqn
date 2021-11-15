@@ -17,6 +17,9 @@ enter ← @+13
 c_q ← @+17
 tab ← @+9
 
+# Current cursor position
+⟨cx, cy⟩ ← 1‿1
+
 # Laminate array of strings with ANSI escape and concatenate them together
 Ansi ← ∾ansiesc⊸∾⌜
 
@@ -26,8 +29,11 @@ NewLine ← {𝕊: cx↩1 ⋄ cy↩(h-1)⌊cy+1 ⋄ f↩f∾<""}
 # Move cursor to a specific position
 CursorTo ← •OutRaw∘(ansiesc∾"["∾(•Fmt 1⊸⊑)∾";"∾(•Fmt ⊑)∾"H"∘⊢)
 
+# Insert character (right argument) to left argument at position `cx`
+InsertChar ← {𝕨𝕊𝕩: ((cx-1)↑𝕨)∾𝕩∾((cx-1)↓𝕨)}
+
 # Put character to screen, update cursor
-PutChar ← {𝕊𝕩: f↩𝕩{∾⟜𝕨⌾((cy-1)⊸⊑)𝕩}f ⋄ cx↩cx+1}
+PutChar ← {𝕊𝕩: f↩𝕩{InsertChar⟜𝕨⌾((cy-1)⊸⊑)𝕩}f ⋄ cx↩cx+1}
 
 DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿cy}
 
@@ -56,8 +62,6 @@ kfns ← Esc‿Quit‿PutTab‿NewLine‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
-
-⟨cx, cy⟩ ← 1‿1
 
 # Status bar contents
 StatusStr ← {𝕊:
