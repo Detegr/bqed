@@ -15,6 +15,7 @@ Scrn ← ∘‿w⊸⥊·∾w⊸↑¨
 ansiesc ← @+27
 enter ← @+13
 c_q ← @+17
+tab ← @+9
 
 # Laminate array of strings with ANSI escape and concatenate them together
 Ansi ← ∾ansiesc⊸∾⌜
@@ -33,6 +34,8 @@ DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿c
 # Restore terminal state and exit
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 
+PutTab ← {𝕊: PutChar "        " ⋄ cx↩cx+7 }
+
 HandleEsc ← {
   "[": HandleEsc •GetChar @ ;
   # Cursor movement
@@ -46,10 +49,10 @@ HandleEsc ← {
 Esc ← {𝕊: HandleEsc •GetChar @ }
 
 # Special keycodes to react to
-keys ← ansiesc‿c_q‿enter
+keys ← ansiesc‿c_q‿tab‿enter
 
 # List of functions corresponding indices of `keys`
-kfns ← Esc‿Quit‿NewLine‿PutChar
+kfns ← Esc‿Quit‿PutTab‿NewLine‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
