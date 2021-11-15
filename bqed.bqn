@@ -33,11 +33,23 @@ DrawEditor ← {𝕊𝕩: CursorTo 1‿1 ⋄ •OutRaw¨𝕩 ⋄ CursorTo cx‿c
 # Restore terminal state and exit
 Quit ← {•SH "stty"‿"-raw"‿"echo" ⋄ •Exit 𝕩}
 
+HandleEsc ← {
+  "[": HandleEsc •GetChar @ ;
+  # Cursor movement
+  "A": cy ↩ (cy-1)⌈1  ⋄ cx ↩ cx⌊1+≠f⊑˜(cy-1) ; # Up
+  "B": cy ↩ (cy+1)⌊≠f ⋄ cx ↩ cx⌊1+≠f⊑˜(cy-1) ; # Down
+  "C": cx ↩ (cx+1)⌊1+≠f⊑˜cy-1                ; # Right
+  "D": cx ↩ (cx-1)⌈1                         ; # Left
+  𝕩: PutChar •Fmt (⊑𝕩-@)
+}
+
+Esc ← {𝕊: HandleEsc •GetChar @ }
+
 # Special keycodes to react to
-keys ← c_q‿enter
+keys ← ansiesc‿c_q‿enter
 
 # List of functions corresponding indices of `keys`
-kfns ← Quit‿NewLine‿PutChar
+kfns ← Esc‿Quit‿NewLine‿PutChar
 
 # Get function for keycode
 Kfn ← ⊑keys⊸⊐
